@@ -1,0 +1,3 @@
+username,password,displayName,role,active
+husni,secret123,Husni QA,QA,true
+sara,pass456,Sara Tester,Tester,true

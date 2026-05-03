@@ -1,0 +1,91 @@
+name: Release Readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Version to validate, for example 0.1.0-alpha"
+        required: true
+        default: "0.1.0-alpha"
+      next_snapshot_version:
+        description: "Next snapshot version, for example 0.1.1-SNAPSHOT"
+        required: true
+        default: "0.1.1-SNAPSHOT"
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: "21"
+  MAVEN_OPTS: "-Xmx2048m -Dfile.encoding=UTF-8"
+
+jobs:
+  release-check:
+    name: Validate release readiness
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Check required release files
+        shell: bash
+        run: |
+          required_files=(
+            "README.md"
+            "CHANGELOG.md"
+            "CONTRIBUTING.md"
+            "LICENSE"
+            "docs/README.md"
+            "docs/getting-started.md"
+            "docs/architecture.md"
+            "docs/web-testing.md"
+            "docs/rtl-testing.md"
+            "docs/api-testing.md"
+            "docs/configuration-reference.md"
+            "docs/coverage-matrix.md"
+            "docs/roadmap.md"
+            "docs/release-checklist.md"
+            "docs/ci-cd.md"
+            ".github/workflows/maven-central-release.yml"
+            "docs/consumer-installation.md"
+            "docs/namespace-decision.md"
+            "docs/release-process.md"
+            "docs/maven-central-publishing.md"
+            "pom.xml"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "Missing required release file: $file"
+              exit 1
+            fi
+          done
+
+      - name: Validate Maven build
+        run: mvn -B -ntp clean verify -Dqatra.env=local -Dqatra.browser=chrome -Dqatra.headless=true -Dsurefire.failIfNoSpecifiedTests=false
+
+      - name: Validate Maven Central release profile dry-run
+        run: mvn -B -ntp -Pcentral-release package -DskipTests -Dgpg.skip=true -Dcentral.skipPublishing=true
+
+      - name: Package release candidate
+        run: mvn -B -ntp package -DskipTests
+
+      - name: Upload release candidate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qatra-release-candidate-${{ github.event.inputs.release_version }}
+          path: |
+            **/target/*.jar
+            **/target/surefire-reports
+            **/target/allure-results
+            **/target/qatra-reports
+          if-no-files-found: ignore
+          retention-days: 30

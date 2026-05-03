@@ -1,0 +1,16 @@
+[
+  {
+    "username": "ali",
+    "password": "api123",
+    "displayName": "Ali API",
+    "role": "API Tester",
+    "active": true
+  },
+  {
+    "username": "mona",
+    "password": "json456",
+    "displayName": "Mona JSON",
+    "role": "QA Lead",
+    "active": true
+  }
+]

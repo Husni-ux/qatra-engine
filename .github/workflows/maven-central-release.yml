@@ -1,0 +1,102 @@
+name: Maven Central Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version, for example 0.1.0-alpha"
+        required: true
+        default: "0.1.0-alpha"
+      dry_run:
+        description: "Create the Central bundle only without uploading"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      auto_publish:
+        description: "Automatically publish after validation. Keep false for first releases."
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+jobs:
+  central-release:
+    name: Build Maven Central bundle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Validate requested version
+        run: |
+          VERSION="${{ inputs.release_version }}"
+          if [[ "$VERSION" == *SNAPSHOT* ]]; then
+            echo "Release version must not contain SNAPSHOT: $VERSION"
+            exit 1
+          fi
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9._-]+)?$ ]]; then
+            echo "Release version does not look semantic: $VERSION"
+            exit 1
+          fi
+
+      - name: Set release version
+        run: |
+          mvn -B -ntp org.codehaus.mojo:versions-maven-plugin:2.17.1:set \
+            -DnewVersion=${{ inputs.release_version }} \
+            -DgenerateBackupPoms=false
+
+      - name: Run full verification
+        run: |
+          mvn -B -ntp clean verify \
+            -Dqatra.env=local \
+            -Dqatra.browser=chrome \
+            -Dqatra.headless=true \
+            -Dsurefire.failIfNoSpecifiedTests=false
+
+      - name: Build Central bundle or publish
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mvn -B -ntp -Pcentral-release deploy \
+            -DskipTests \
+            -Dcentral.skipPublishing=${{ inputs.dry_run }} \
+            -Dcentral.autoPublish=${{ inputs.auto_publish }} \
+            -Dcentral.waitUntil=validated
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qatra-central-release-${{ inputs.release_version }}
+          if-no-files-found: ignore
+          path: |
+            **/target/*.jar
+            **/target/*.pom
+            **/target/*.asc
+            **/target/central-publishing/**
+            **/target/surefire-reports/**
+            **/target/allure-results/**
+            **/target/qatra-reports/**

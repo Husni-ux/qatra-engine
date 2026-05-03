@@ -1,0 +1,31 @@
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# QATRA generated evidence
+**/target/qatra-reports/
+**/target/allure-results/
+**/target/surefire-reports/
+**/target/failsafe-reports/
+allure-report/
+
+# Local configuration / secrets
+.env
+*.local.properties
+qatra-secret.properties
+
+# OS files
+.DS_Store
+Thumbs.db

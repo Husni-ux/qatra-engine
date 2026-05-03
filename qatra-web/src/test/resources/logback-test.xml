@@ -1,0 +1,26 @@
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Keep Selenium/HTTP internals quiet -->
+    <logger name="org.apache.hc.client5.http.wire" level="OFF"/>
+    <logger name="org.apache.hc.client5.http.headers" level="WARN"/>
+    <logger name="org.apache.hc.client5.http" level="WARN"/>
+    <logger name="org.openqa.selenium" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+
+    <!-- Test framework logs -->
+    <logger name="org.testng" level="INFO"/>
+
+    <!-- QATRA logs -->
+    <logger name="QATRA" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>
