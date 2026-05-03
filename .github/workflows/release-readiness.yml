@@ -79,7 +79,7 @@ jobs:
         run: mvn -B -ntp package -DskipTests
 
       - name: Upload release candidate artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qatra-release-candidate-${{ github.event.inputs.release_version }}
           path: |
