@@ -17,6 +17,8 @@ Phase 3.6  Retry, parallel execution, and stability
 Phase 3.7  Environment profiles and configuration management
 Phase 3.8  CI/CD and release readiness
 Phase 3.9  Documentation polish and public README
+Phase 3.10 Web hardening, RTL regex fix, and parallel-safe RTL config
+Phase 3.11  Smart Wait Engine v2 and fluent API consistency
 ```
 
 ## Next Recommended Phases
@@ -88,3 +90,18 @@ RTL quality
 Evidence-rich reporting
 CI/CD quality gates
 ```
+
+## Phase 3.12 — QATRA Adaptive Wait Engine
+
+Goal: make QATRA waits stronger than raw Selenium waits and more specialized than generic framework synchronization.
+
+Scope:
+
+- Diagnostic-rich FluentWait wrapper.
+- Multi-signal readiness model.
+- Arabic/RTL readiness conditions.
+- Visual stability and overlay checks.
+- Component-specific readiness checks.
+- Timeout evidence reports.
+
+Status: initial implementation and design added. Full production hardening requires additional unit and browser integration tests.
