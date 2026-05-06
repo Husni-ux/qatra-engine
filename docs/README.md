@@ -38,3 +38,14 @@ Welcome to the QATRA Engine documentation.
 - Prefer stable locators such as `id`, `data-testid`, and accessibility-friendly attributes.
 - Keep Arabic/RTL testing visible in public examples.
 - Update docs whenever public APIs change.
+
+- [Smart Wait Engine v2](smart-wait-engine-v2.md)
+
+## Adaptive Wait Engine Docs
+
+- [Selenium vs SHAFT Wait Analysis](selenium-shaft-wait-analysis.md)
+- [QATRA Adaptive Wait Engine](qatra-adaptive-wait-engine.md)
+- [Wait Capability Comparison](qatra-adaptive-wait-comparison.md)
+- [Adaptive Wait Roadmap](qatra-adaptive-wait-roadmap.md)
+- [Adaptive Wait GitHub Issues](github-issues-adaptive-wait.md)
+- [README Adaptive Wait Draft](README-improvement-adaptive-waits.md)

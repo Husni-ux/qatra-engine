@@ -13,12 +13,19 @@ import io.github.qatra.web.actions.StorageActions;
 import io.github.qatra.web.actions.TableActions;
 import io.github.qatra.web.actions.WindowActions;
 import io.github.qatra.web.assertions.WebAssertions;
+import io.github.qatra.web.assertions.engine.ElementAssert;
+import io.github.qatra.web.assertions.engine.QatraAssert;
 import io.github.qatra.web.factory.WebDriverFactory;
 import io.github.qatra.web.fluent.FluentWeb;
 import io.github.qatra.web.page.QatraComponent;
 import io.github.qatra.web.page.QatraPage;
 import io.github.qatra.web.page.QatraPageFactory;
 import io.github.qatra.web.reports.ScreenshotManager;
+import io.github.qatra.web.components.QatraDropdown;
+import io.github.qatra.web.components.QatraLoadingOverlay;
+import io.github.qatra.web.components.QatraModal;
+import io.github.qatra.web.components.QatraTable;
+import io.github.qatra.web.components.QatraToast;
 import io.github.qatra.web.reports.DiagnosticsManager;
 import io.github.qatra.web.waits.SmartWait;
 import io.github.qatra.web.rtl.RtlActions;
@@ -112,6 +119,20 @@ public class WebDriver {
     }
 
 
+
+    /**
+     * Start the cleaner QATRA Web Assertion Engine for one element.
+     *
+     * <pre>
+     * driver.expect(By.id("title"))
+     *       .exists()
+     *       .rtl().hasArabicText().hasRtlDirection();
+     * </pre>
+     */
+    public ElementAssert expect(By locator) {
+        return QatraAssert.that(seleniumDriver, locator);
+    }
+
     /**
      * Start JavaScript alert/confirm/prompt actions.
      */
@@ -159,6 +180,41 @@ public class WebDriver {
      */
     public TableActions table(By tableLocator) {
         return fluent.table(tableLocator);
+    }
+
+    /**
+     * Start a web component dropdown helper for native or custom dropdown widgets.
+     */
+    public QatraDropdown dropdown(By rootLocator) {
+        return QatraDropdown.of(seleniumDriver, rootLocator);
+    }
+
+    /**
+     * Start a dynamic web table helper focused on readable table assertions.
+     */
+    public QatraTable webTable(By rootLocator) {
+        return QatraTable.of(seleniumDriver, rootLocator);
+    }
+
+    /**
+     * Start a modal dialog helper.
+     */
+    public QatraModal modal(By rootLocator) {
+        return QatraModal.of(seleniumDriver, rootLocator);
+    }
+
+    /**
+     * Start a toast/notification helper.
+     */
+    public QatraToast toast(By rootLocator) {
+        return QatraToast.of(seleniumDriver, rootLocator);
+    }
+
+    /**
+     * Start a loading overlay helper.
+     */
+    public QatraLoadingOverlay loadingOverlay() {
+        return QatraLoadingOverlay.of(seleniumDriver);
     }
 
 

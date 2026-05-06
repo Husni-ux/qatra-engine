@@ -7,6 +7,8 @@ import io.github.qatra.web.assertions.WebAssertions;
 import io.github.qatra.web.fluent.FluentWeb;
 import io.github.qatra.web.reports.AllureReport;
 import io.github.qatra.web.waits.SmartWait;
+import io.github.qatra.web.waits.QatraWait;
+import io.github.qatra.web.waits.adaptive.QatraAdaptiveWait;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
@@ -350,6 +352,110 @@ public class ElementActions {
      */
     public ElementActions waitUntilPageReady() {
         SmartWait.untilPageReady(driver, timeoutSeconds);
+        return this;
+    }
+
+    /**
+     * Wait using QATRA Adaptive Wait until the element is safe for click.
+     * This combines visibility, enabled state, stability, overlay detection, and loading overlay checks.
+     */
+    public ElementActions waitUntilReadyForClick(By locator) {
+        QatraAdaptiveWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .untilReadyForClick();
+        return this;
+    }
+
+    /**
+     * Click using QATRA Adaptive Wait instead of the basic wait helper.
+     */
+    public ElementActions adaptiveClick(By locator) {
+        LOG.action("Adaptive click: {}", locator);
+        AllureReport.step("Adaptive click element: " + locator);
+        WebElement element = QatraAdaptiveWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .untilReadyForClick()
+                .element();
+        element.click();
+        return this;
+    }
+
+    /**
+     * Type using QATRA Adaptive Wait. Useful for dynamic forms and custom Arabic/RTL screens.
+     */
+    public ElementActions adaptiveType(By locator, String text) {
+        LOG.action("Adaptive type '{}' into: {}", text, locator);
+        AllureReport.step("Adaptive type text into: " + locator);
+        WebElement element = QatraAdaptiveWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .require()
+                .visible()
+                .enabled()
+                .stable()
+                .noLoadingOverlay()
+                .untilReady()
+                .element();
+        element.clear();
+        element.sendKeys(text);
+        return this;
+    }
+
+    /**
+     * Wait until an Arabic/RTL element is rendered correctly using adaptive Arabic conditions.
+     */
+    public ElementActions waitUntilArabicReady(By locator, String expectedArabicText) {
+        QatraAdaptiveWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .untilArabicTextReady(expectedArabicText);
+        return this;
+    }
+
+
+    /** Wait until an element has visible Arabic text. */
+    public ElementActions waitUntilArabicTextIsVisible(By locator, String expectedArabicText) {
+        QatraWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilArabicTextIsVisible(expectedArabicText);
+        return this;
+    }
+
+    /** Wait until element text has no common Arabic mojibake/broken encoding. */
+    public ElementActions waitUntilTextIsNotBroken(By locator) {
+        QatraWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilTextIsNotBroken();
+        return this;
+    }
+
+    /** Wait until the element has effective RTL direction. */
+    public ElementActions waitUntilRtlDirectionApplied(By locator) {
+        QatraWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilRtlDirectionApplied();
+        return this;
+    }
+
+    /** Wait until an element stops moving/resizing for consecutive polls. */
+    public ElementActions waitUntilElementIsStable(By locator) {
+        QatraWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilElementIsStable();
+        return this;
+    }
+
+    /** Wait until common custom component loading states are cleared. */
+    public ElementActions waitUntilCustomComponentReady(By locator) {
+        QatraWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilCustomComponentReady();
+        return this;
+    }
+
+    /** Wait until Arabic content is visible, RTL, and not broken. */
+    public ElementActions waitUntilArabicTextRenderedCorrectly(By locator) {
+        QatraWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilArabicTextRenderedCorrectly();
         return this;
     }
 

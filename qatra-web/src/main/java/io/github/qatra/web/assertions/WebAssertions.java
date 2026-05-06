@@ -6,6 +6,8 @@ import io.github.qatra.web.actions.ElementActions;
 import io.github.qatra.web.fluent.FluentWeb;
 import io.github.qatra.web.reports.AllureReport;
 import io.github.qatra.web.reports.DiagnosticsManager;
+import io.github.qatra.web.assertions.engine.ElementAssert;
+import io.github.qatra.web.assertions.engine.QatraAssert;
 import io.github.qatra.web.rtl.RtlEngine;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -50,6 +52,15 @@ public class WebAssertions {
      */
     public ElementAssertions element(By locator) {
         return new ElementAssertions(locator, driver, this, timeoutSeconds);
+    }
+
+
+    /**
+     * Start the cleaner QATRA Web Assertion Engine while keeping the legacy
+     * WebAssertions API backward-compatible.
+     */
+    public ElementAssert expect(By locator) {
+        return QatraAssert.that(driver, locator, Duration.ofSeconds(timeoutSeconds));
     }
 
     /**

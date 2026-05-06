@@ -160,6 +160,33 @@ public class BrowserActions {
         return this;
     }
 
+
+    /**
+     * Wait until the current page is fully ready.
+     * Returns BrowserActions to preserve fluent chaining:
+     * driver.browser().navigateTo(url).waitUntilPageReady().assertThat()...
+     */
+    public BrowserActions waitUntilPageReady() {
+        int timeoutSeconds = QatraConfig.getInstance()
+                .getIntProperty(QatraProperties.PAGE_LOAD_TIMEOUT, 30);
+        io.github.qatra.web.waits.QatraWait
+                .forPage(driver)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilPageIsFullyReady();
+        return this;
+    }
+
+    /** Wait until common Ajax/custom loading signals are completed. */
+    public BrowserActions waitUntilAjaxCompleted() {
+        int timeoutSeconds = QatraConfig.getInstance()
+                .getIntProperty(QatraProperties.ELEMENT_TIMEOUT, 10);
+        io.github.qatra.web.waits.QatraWait
+                .forPage(driver)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .waitUntilAjaxIsCompleted();
+        return this;
+    }
+
     /** Return to the parent FluentWeb object. */
     public FluentWeb and() {
         return parent;
