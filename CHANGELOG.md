@@ -1,4 +1,82 @@
 
+## Phase 3.18.9 — Arabic Component Self-Healing
+
+- Added component-intent based locator healing for Arabic/RTL web applications.
+- Added `QatraComponentHealing` as a driver entry point through `driver().componentHealing()` and `driver().components()`.
+- Added component locator strategies for Arabic dropdowns, tables, modals, toasts, date pickers, and label-based input fields.
+- Added business-readable component resolution such as `dropdown("المدينة")`, `tableContaining("منشأة تجريبية")`, and `modalButton("تأكيد الحفظ", "تأكيد")`.
+- Integrated component healing with the existing confidence, risk, guardrail, reporting, and patch suggestion workflow.
+- Added TestNG coverage for Arabic dropdown, table, modal button, input label, and toast component healing.
+- Added documentation and GitHub issue suggestions for Arabic component self-healing.
+
+
+## Phase 3.18.8 — Accessibility Tree Locator Healing
+
+- Added accessibility-tree based locator healing support.
+- Added practical accessible-name resolver using ARIA, labels, placeholder, title, alt, value, and visible text.
+- Added role + accessible-name fallback strategies.
+- Added label text and placeholder fallback strategies for Arabic forms.
+- Integrated accessibility evidence into healing confidence scoring.
+- Added TestNG coverage for Arabic accessibility locator healing.
+
+
+## Phase 3.18.6 — Advanced Healing Reports
+
+- Enhanced the self-healing locator report into a full QA evidence package.
+- Added `healing-dashboard-latest.html`.
+- Added `human-review-checklist-latest.md`.
+- Added `candidate-comparison-latest.csv`.
+- Added `healing-decision-matrix-latest.json`.
+- Added Markdown locator patch suggestions in `locator-patches.md`.
+- Improved HTML report structure with candidate comparison and review checklist sections.
+- Added documentation for advanced healing reports and suggested follow-up GitHub issues.
+
+
+## Phase 3.18.5 — Healing Modes & Bug-Safety Guardrails
+
+- Added mode-aware healing policy engine.
+- Added OFF, REPORT_ONLY, SUGGEST_ONLY, SAFE_AUTO_HEAL, AUTO_HEAL, and STRICT_APPROVAL behavior.
+- Added bug-safety guardrails to block hidden, disabled, or ambiguous candidates.
+- Added strict approval file support for controlled healing.
+- Added healing mode audit reports under `target/qatra-reports/healing/modes`.
+- Added TestNG coverage for report-only mode, ambiguous candidate blocking, and strict approval.
+
+
+## Phase 3.18.3 — Arabic Semantic Locator Healing
+
+- Added Arabic action dictionary for common business actions.
+- Added Arabic text normalization and semantic similarity utilities.
+- Added Arabic semantic action fallback locators.
+- Added Arabic nearby-label fallback for form fields.
+- Integrated Arabic semantic matching into healing confidence scoring.
+- Added tests for Arabic action healing and label-based field resolution.
+- Added documentation for Arabic semantic locator healing.
+
+
+## Phase 3.18 — Self-Healing Locator Engine
+
+- Added `QatraLocator` for business-readable locator fallback chains.
+- Added `QatraLocatorEngine` for primary and fallback locator resolution.
+- Added locator healing diagnostics and resolution reports.
+- Added locator quality advisor for fragile selectors.
+- Added smart element actions: `smartClick`, `smartType`, `smartClear`, `smartAppend`, `smartFind`, `smartGetText`.
+- Added TestNG coverage for Arabic text fallback, data-testid fallback, and locator quality scoring.
+- Added documentation for self-healing locator strategy.
+
+## Phase 3.16 - Adaptive Element Actions Integration
+
+### Added
+- Added explicit adaptive element actions powered by `QatraAdaptiveWait`.
+- Added `adaptiveClear`, `adaptiveAppend`, `adaptiveSubmit`, `adaptiveHover`, `adaptiveDoubleClick`, `adaptiveRightClick`, `adaptiveScrollAndClick`, `adaptiveSelectByText`, `adaptiveSelectByValue`, `adaptiveSelectByIndex`, `adaptiveCheck`, `adaptiveUncheck`, and `adaptiveUploadFile`.
+- Added `waitUntilAdaptiveReady` and `waitUntilArabicTextReady` as tester-friendly readiness APIs.
+- Added `QatraAdaptiveElementActionsTest` smoke tests.
+- Added documentation for adaptive element actions under `docs/adaptive-element-actions.md`.
+
+### Improved
+- Reduced duplicated adaptive wait logic in `ElementActions` by adding internal adaptive helper methods.
+- Kept classic element actions backward-compatible while making adaptive behavior explicit and opt-in.
+
+
 ## Phase 3.15 - Web Assertion Failure Diagnostics
 
 ### Added
@@ -18,6 +96,17 @@
 - Kept the public assertion API unchanged.
 
 # Changelog
+
+## Phase 3.18.1 — Healing Confidence, Risk & Approval Engine
+
+- Added configurable healing modes.
+- Added fallback locator confidence scoring.
+- Added healing risk classification.
+- Added semantic hints to `QatraLocator`.
+- Added Arabic text and role evidence in healing decisions.
+- Enhanced locator healing reports with confidence, risk, and rejected candidates.
+- Added tests for safe auto-healing and suggest-only mode.
+
 
 
 ## Phase 3.14 — Web Assertion Engine Cleanup
@@ -113,3 +202,54 @@ QATRA should remain powered by Selenium while specializing in Arabic/RTL readine
 ### Notes
 - Default element actions remain backward-compatible.
 - Adaptive actions are opt-in while the component layer matures.
+
+## Phase 3.17 — Real-World Web Smoke Examples
+
+### Added
+
+- Added local real-world style web smoke examples for Arabic/RTL workflows.
+- Added `QatraWebRealWorldExamplesTest` covering Arabic login, RTL page scan, and component-based Arabic workflow examples.
+- Added optional external website smoke example `QatraZatcaSmokeExample`, intentionally excluded from default Maven test execution by class naming.
+- Added documentation for real-world web smoke examples and safe public website testing rules.
+- Added a practical web pilot plan for introducing QATRA in real teams.
+
+### Notes
+
+- External public website examples are meant for light smoke validation only.
+- No load testing, security testing, crawling, or production form submissions should be performed without authorization.
+
+## Phase 3.18.2 — Healing Reports & Patch Suggestions
+
+### Added
+
+- Added human-reviewable healing report export for self-healing locators.
+- Added TXT, JSON, and HTML healing report outputs.
+- Added timestamped healing history reports and history index.
+- Added `locator-patches.json` for suggested permanent locator replacements.
+- Added `HealingReportExporter`, `HealingPatchSuggestion`, and `HealingReportArtifacts`.
+- Added tests for healing report and patch suggestion generation.
+
+### Notes
+
+QATRA does not automatically rewrite source code. It exports evidence and patch suggestions so testers can review locator changes intentionally.
+
+
+## Phase 3.18.4 — Proactive Locator Quality Advisor
+
+- Added proactive locator quality analysis before runtime failure.
+- Added advanced locator scoring, risk levels, issue codes, and recommendations.
+- Added QatraLocator chain analysis including fallback candidate quality.
+- Added locator quality reports in HTML, JSON, and TXT formats.
+- Added LocatorQualityGate for CI/test enforcement.
+- Added `driver().locatorAdvisor()` fluent entry point.
+- Added documentation and tests for locator quality advisor.
+
+## Phase 3.18.7 — IDE-Free Code Patch Strategy
+
+- Added reviewable locator patch workflow artifacts.
+- Added `qatra-healing-suggestions.json` and Markdown suggestions.
+- Added unified diff locator patch suggestions.
+- Added approval template JSON for future human-approved healing.
+- Added HTML review page for patch suggestions.
+- Added lightweight Page Object source scanner foundation.
+- Added tests for the patch workflow exporter.

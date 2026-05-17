@@ -29,6 +29,8 @@ import io.github.qatra.web.components.QatraToast;
 import io.github.qatra.web.reports.DiagnosticsManager;
 import io.github.qatra.web.waits.SmartWait;
 import io.github.qatra.web.rtl.RtlActions;
+import io.github.qatra.web.locators.advisor.QatraLocatorAdvisor;
+import io.github.qatra.web.locators.healing.components.QatraComponentHealing;
 
 import org.openqa.selenium.By;
 
@@ -217,6 +219,40 @@ public class WebDriver {
         return QatraLoadingOverlay.of(seleniumDriver);
     }
 
+
+
+    /**
+     * Start Arabic component self-healing helpers.
+     *
+     * <pre>
+     * driver.componentHealing()
+     *       .dropdown("المدينة")
+     *       .selectArabicText("الرياض");
+     * </pre>
+     */
+    public QatraComponentHealing componentHealing() {
+        return QatraComponentHealing.of(seleniumDriver);
+    }
+
+    /**
+     * Alias for componentHealing(), optimized for readable tests.
+     */
+    public QatraComponentHealing components() {
+        return componentHealing();
+    }
+
+
+    /**
+     * Start proactive locator quality analysis before locators fail.
+     *
+     * <pre>
+     * driver.locatorAdvisor()
+     *       .analyze(By.xpath("/html/body/div[3]/button[1]"));
+     * </pre>
+     */
+    public QatraLocatorAdvisor locatorAdvisor() {
+        return QatraLocatorAdvisor.of(seleniumDriver);
+    }
 
     /**
      * Start Arabic/RTL validation and scanning features.

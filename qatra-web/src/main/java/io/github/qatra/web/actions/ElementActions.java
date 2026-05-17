@@ -9,6 +9,9 @@ import io.github.qatra.web.reports.AllureReport;
 import io.github.qatra.web.waits.SmartWait;
 import io.github.qatra.web.waits.QatraWait;
 import io.github.qatra.web.waits.adaptive.QatraAdaptiveWait;
+import io.github.qatra.web.locators.LocatorResolution;
+import io.github.qatra.web.locators.QatraLocator;
+import io.github.qatra.web.locators.QatraLocatorEngine;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
@@ -360,9 +363,16 @@ public class ElementActions {
      * This combines visibility, enabled state, stability, overlay detection, and loading overlay checks.
      */
     public ElementActions waitUntilReadyForClick(By locator) {
-        QatraAdaptiveWait.forElement(driver, locator)
-                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
-                .untilReadyForClick();
+        adaptiveReadyForClick(locator);
+        return this;
+    }
+
+    /**
+     * Wait until an element is generally ready for interaction.
+     * This is useful for dynamic forms where the element may be visible but still moving or blocked by a loader.
+     */
+    public ElementActions waitUntilAdaptiveReady(By locator) {
+        adaptiveInteractive(locator);
         return this;
     }
 
@@ -372,11 +382,17 @@ public class ElementActions {
     public ElementActions adaptiveClick(By locator) {
         LOG.action("Adaptive click: {}", locator);
         AllureReport.step("Adaptive click element: " + locator);
-        WebElement element = QatraAdaptiveWait.forElement(driver, locator)
-                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
-                .untilReadyForClick()
-                .element();
-        element.click();
+        adaptiveReadyForClick(locator).click();
+        return this;
+    }
+
+    /**
+     * Clear a field using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveClear(By locator) {
+        LOG.action("Adaptive clear: {}", locator);
+        AllureReport.step("Adaptive clear element: " + locator);
+        adaptiveInteractive(locator).clear();
         return this;
     }
 
@@ -386,18 +402,222 @@ public class ElementActions {
     public ElementActions adaptiveType(By locator, String text) {
         LOG.action("Adaptive type '{}' into: {}", text, locator);
         AllureReport.step("Adaptive type text into: " + locator);
-        WebElement element = QatraAdaptiveWait.forElement(driver, locator)
-                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
-                .require()
-                .visible()
-                .enabled()
-                .stable()
-                .noLoadingOverlay()
-                .untilReady()
-                .element();
+        WebElement element = adaptiveInteractive(locator);
         element.clear();
         element.sendKeys(text);
         return this;
+    }
+
+    /**
+     * Append text using QATRA Adaptive Wait without clearing the field first.
+     */
+    public ElementActions adaptiveAppend(By locator, String text) {
+        LOG.action("Adaptive append '{}' to: {}", text, locator);
+        AllureReport.step("Adaptive append text to: " + locator);
+        adaptiveInteractive(locator).sendKeys(text);
+        return this;
+    }
+
+    /**
+     * Type text using QATRA Adaptive Wait and then press a key, such as ENTER.
+     */
+    public ElementActions adaptiveTypeAndPress(By locator, String text, Keys key) {
+        LOG.action("Adaptive type '{}' and press {} into: {}", text, key.name(), locator);
+        AllureReport.step("Adaptive type text and press " + key.name() + " into element: " + locator);
+        WebElement element = adaptiveInteractive(locator);
+        element.clear();
+        element.sendKeys(text);
+        element.sendKeys(key);
+        return this;
+    }
+
+    /**
+     * Submit a form using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveSubmit(By locator) {
+        LOG.action("Adaptive submit via: {}", locator);
+        AllureReport.step("Adaptive submit via element: " + locator);
+        adaptiveInteractive(locator).sendKeys(Keys.RETURN);
+        return this;
+    }
+
+    /**
+     * Hover over an element using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveHover(By locator) {
+        LOG.action("Adaptive hover over: {}", locator);
+        AllureReport.step("Adaptive hover over element: " + locator);
+        new Actions(driver).moveToElement(adaptiveInteractive(locator)).perform();
+        return this;
+    }
+
+    /**
+     * Double-click an element using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveDoubleClick(By locator) {
+        LOG.action("Adaptive double-click: {}", locator);
+        AllureReport.step("Adaptive double-click element: " + locator);
+        new Actions(driver).doubleClick(adaptiveReadyForClick(locator)).perform();
+        return this;
+    }
+
+    /**
+     * Right-click an element using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveRightClick(By locator) {
+        LOG.action("Adaptive right-click: {}", locator);
+        AllureReport.step("Adaptive right-click element: " + locator);
+        new Actions(driver).contextClick(adaptiveInteractive(locator)).perform();
+        return this;
+    }
+
+    /**
+     * Scroll an element into view and click it using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveScrollAndClick(By locator) {
+        LOG.action("Adaptive scroll & click: {}", locator);
+        AllureReport.step("Adaptive scroll and click element: " + locator);
+        WebElement element = adaptiveInteractive(locator);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
+        adaptiveReadyForClick(locator).click();
+        return this;
+    }
+
+    /**
+     * Select a dropdown option by visible text using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveSelectByText(By locator, String text) {
+        LOG.action("Adaptive select '{}' from: {}", text, locator);
+        AllureReport.step("Adaptive select visible text from element: " + locator);
+        new Select(adaptiveInteractive(locator)).selectByVisibleText(text);
+        return this;
+    }
+
+    /**
+     * Select a dropdown option by value using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveSelectByValue(By locator, String value) {
+        LOG.action("Adaptive select by value '{}' from: {}", value, locator);
+        AllureReport.step("Adaptive select value from element: " + locator);
+        new Select(adaptiveInteractive(locator)).selectByValue(value);
+        return this;
+    }
+
+    /**
+     * Select a dropdown option by index using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveSelectByIndex(By locator, int index) {
+        LOG.action("Adaptive select index '{}' from: {}", index, locator);
+        AllureReport.step("Adaptive select index " + index + " from element: " + locator);
+        new Select(adaptiveInteractive(locator)).selectByIndex(index);
+        return this;
+    }
+
+    /**
+     * Check a checkbox using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveCheck(By locator) {
+        LOG.action("Adaptive check: {}", locator);
+        AllureReport.step("Adaptive check element: " + locator);
+        WebElement element = adaptiveReadyForClick(locator);
+        if (!element.isSelected()) element.click();
+        return this;
+    }
+
+    /**
+     * Uncheck a checkbox using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveUncheck(By locator) {
+        LOG.action("Adaptive uncheck: {}", locator);
+        AllureReport.step("Adaptive uncheck element: " + locator);
+        WebElement element = adaptiveReadyForClick(locator);
+        if (element.isSelected()) element.click();
+        return this;
+    }
+
+    /**
+     * Upload a file using QATRA Adaptive Wait.
+     */
+    public ElementActions adaptiveUploadFile(By locator, String absoluteFilePath) {
+        LOG.action("Adaptive upload file: {}", absoluteFilePath);
+        AllureReport.step("Adaptive upload file using element: " + locator);
+        adaptiveInteractive(locator).sendKeys(absoluteFilePath);
+        return this;
+    }
+
+
+    // ─── Self-Healing Locator Actions ────────────────────────────────────────
+
+    /**
+     * Resolve a QATRA self-healing locator and return the selected Selenium element.
+     * The resolution report is logged when a fallback is used.
+     */
+    public WebElement smartFind(QatraLocator locator) {
+        LocatorResolution resolution = heal(locator);
+        return resolution.element();
+    }
+
+    /**
+     * Click using QATRA self-healing locator resolution and adaptive readiness.
+     */
+    public ElementActions smartClick(QatraLocator locator) {
+        LocatorResolution resolution = heal(locator);
+        LOG.action("Smart click using {}", resolution.locator());
+        AllureReport.step("Smart click using resolved locator: " + resolution.locator());
+        adaptiveReadyForClick(resolution.locator()).click();
+        return this;
+    }
+
+    /**
+     * Clear and type using QATRA self-healing locator resolution and adaptive readiness.
+     */
+    public ElementActions smartType(QatraLocator locator, String text) {
+        LocatorResolution resolution = heal(locator);
+        LOG.action("Smart type '{}' using {}", text, resolution.locator());
+        AllureReport.step("Smart type using resolved locator: " + resolution.locator());
+        WebElement element = adaptiveInteractive(resolution.locator());
+        element.clear();
+        element.sendKeys(text);
+        return this;
+    }
+
+    /**
+     * Clear using QATRA self-healing locator resolution.
+     */
+    public ElementActions smartClear(QatraLocator locator) {
+        LocatorResolution resolution = heal(locator);
+        LOG.action("Smart clear using {}", resolution.locator());
+        AllureReport.step("Smart clear using resolved locator: " + resolution.locator());
+        adaptiveInteractive(resolution.locator()).clear();
+        return this;
+    }
+
+    /**
+     * Append text using QATRA self-healing locator resolution.
+     */
+    public ElementActions smartAppend(QatraLocator locator, String text) {
+        LocatorResolution resolution = heal(locator);
+        LOG.action("Smart append '{}' using {}", text, resolution.locator());
+        AllureReport.step("Smart append using resolved locator: " + resolution.locator());
+        adaptiveInteractive(resolution.locator()).sendKeys(text);
+        return this;
+    }
+
+    /**
+     * Wait until a self-healing locator resolves and is ready for interaction.
+     */
+    public ElementActions smartWaitUntilReady(QatraLocator locator) {
+        LocatorResolution resolution = heal(locator);
+        adaptiveInteractive(resolution.locator());
+        return this;
+    }
+
+    /**
+     * Read text using QATRA self-healing locator resolution.
+     */
+    public String smartGetText(QatraLocator locator) {
+        LocatorResolution resolution = heal(locator);
+        return adaptiveInteractive(resolution.locator()).getText();
     }
 
     /**
@@ -408,6 +628,13 @@ public class ElementActions {
                 .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
                 .untilArabicTextReady(expectedArabicText);
         return this;
+    }
+
+    /**
+     * Alias for waitUntilArabicReady(), using a more explicit public API name.
+     */
+    public ElementActions waitUntilArabicTextReady(By locator, String expectedArabicText) {
+        return waitUntilArabicReady(locator, expectedArabicText);
     }
 
 
@@ -574,6 +801,39 @@ public class ElementActions {
         AllureReport.step("Press key: " + key.name());
         new Actions(driver).sendKeys(key).perform();
         return this;
+    }
+
+    // ─── Adaptive Wait Helpers ────────────────────────────────────────────────
+
+
+    private LocatorResolution heal(QatraLocator locator) {
+        LocatorResolution resolution = QatraLocatorEngine.resolve(
+                driver, locator, java.time.Duration.ofSeconds(timeoutSeconds));
+        if (resolution.healed()) {
+            LOG.warn("Self-healing locator used fallback.\n{}", resolution.report());
+            AllureReport.step("Self-healing locator used fallback: " + resolution.locator());
+        }
+        return resolution;
+    }
+
+    private WebElement adaptiveReadyForClick(By locator) {
+        return QatraAdaptiveWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .untilReadyForClick()
+                .element();
+    }
+
+    private WebElement adaptiveInteractive(By locator) {
+        return QatraAdaptiveWait.forElement(driver, locator)
+                .withTimeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .require()
+                .visible()
+                .enabled()
+                .stable()
+                .notCovered()
+                .noLoadingOverlay()
+                .untilReady()
+                .element();
     }
 
     // ─── Wait Helpers ─────────────────────────────────────────────────────────

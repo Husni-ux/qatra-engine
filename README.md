@@ -27,10 +27,12 @@
 - [Web Testing Example](#web-testing-example)
 - [Smart Wait Engine](#smart-wait-engine)
 - [Adaptive Wait Engine](#adaptive-wait-engine)
+- [Adaptive Element Actions](#adaptive-element-actions)
 - [Arabic / RTL Testing](#arabic--rtl-testing)
 - [Web Assertion Engine](#web-assertion-engine)
 - [Assertion Failure Diagnostics](#assertion-failure-diagnostics)
 - [Web Component Layer](#web-component-layer)
+- [Real-World Web Smoke Examples](#real-world-web-smoke-examples)
 - [Page Object Model](#page-object-model)
 - [Configuration](#configuration)
 - [Reports and Evidence](#reports-and-evidence)
@@ -344,6 +346,48 @@ Documentation:
 
 ---
 
+## Adaptive Element Actions
+
+QATRA also exposes adaptive element actions that use the Adaptive Wait Engine internally.
+
+These methods are designed for dynamic enterprise web applications where a normal Selenium action may fail because the element is visible but not truly ready yet.
+
+Adaptive actions can wait for signals such as:
+
+- Element visibility and enabled state
+- Element visual stability
+- Overlay coverage checks
+- Loading overlay disappearance
+- Arabic text readiness when needed
+- Component and DOM readiness signals
+
+Examples:
+
+```java
+driver()
+        .element()
+        .adaptiveType(By.id("arabic-name"), "منشأة تجريبية")
+        .adaptiveClick(By.id("save"));
+```
+
+Additional adaptive actions include:
+
+```java
+driver().element().adaptiveClear(By.id("name"));
+driver().element().adaptiveAppend(By.id("notes"), "تم التحديث");
+driver().element().adaptiveTypeAndPress(By.id("search"), "منشأة", Keys.ENTER);
+driver().element().adaptiveSelectByText(By.id("city"), "الرياض");
+driver().element().adaptiveHover(By.id("menu"));
+driver().element().adaptiveDoubleClick(By.id("row"));
+driver().element().waitUntilArabicTextReady(By.id("title"), "تسجيل الدخول");
+```
+
+The goal is to make daily test actions safer and more expressive without forcing testers to manually write wait logic before every interaction.
+
+Documentation: [Adaptive Element Actions](docs/adaptive-element-actions.md)
+
+---
+
 ## Arabic / RTL Testing
 
 QATRA is designed with Arabic and RTL testing in mind.
@@ -530,6 +574,37 @@ driver()
 Documentation: [Web Component Layer](docs/web-component-layer.md)
 
 ---
+
+## Real-World Web Smoke Examples
+
+QATRA includes practical web smoke examples that show how to use the framework in realistic Arabic/RTL scenarios without depending on external systems.
+
+The examples demonstrate:
+
+- Arabic login page smoke testing
+- Adaptive actions with loading overlays
+- Arabic/RTL assertion checks
+- RTL full-page scanning and reporting
+- Dropdown, table, and toast component workflows
+- Screenshot and diagnostics evidence capture
+
+Run the local examples with:
+
+```bash
+mvn -pl qatra-web -am clean test -Dtest=QatraWebRealWorldExamplesTest -Dqatra.env=local -Dqatra.browser=chrome -Dqatra.headless=true -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+QATRA also includes an optional external-site example for safe public Arabic website smoke testing. It is intentionally not executed by the default Maven test run.
+
+Safety rules for real websites:
+
+- Do not run load testing
+- Do not run security testing
+- Do not submit production forms
+- Do not crawl heavily
+- Use smoke validation, RTL scan, screenshots, and diagnostics only
+
+Documentation: [Real-World Web Smoke Examples](docs/real-world-web-smoke-examples.md)
 
 ## Page Object Model
 
@@ -818,13 +893,258 @@ Start here:
 
 ---
 
+---
+
+## Self-Healing Locator Engine
+
+QATRA includes a self-healing locator foundation for real-world web automation where locators may change during UI development.
+
+The engine tries the primary locator first, then uses explicit fallback locators such as `data-testid`, `aria-label`, Arabic visible text, English visible text, CSS, or XPath fallbacks.
+
+```java
+QatraLocator saveButton = QatraLocator.primary(By.id("saveBtn"))
+        .named("Save button")
+        .fallbackDataTestId("save-button")
+        .fallbackText("حفظ")
+        .fallbackText("Save")
+        .build();
+
+driver()
+        .element()
+        .smartClick(saveButton);
+```
+
+QATRA also provides a locator quality advisor to flag fragile selectors such as absolute XPath, index-based XPath, and dynamic framework-generated classes.
+
+```java
+LocatorQualityReport report = LocatorQualityAdvisor.analyze(
+        By.xpath("/html/body/div[3]/div[2]/button[1]")
+);
+
+System.out.println(report.score());
+System.out.println(report.riskLevel());
+System.out.println(report.recommendations());
+```
+
+This feature is designed to reduce locator-driven flaky failures while still making locator weaknesses visible to the team.
+
+
+---
+
+## Healing Confidence, Risk & Approval Engine
+
+QATRA does not blindly heal broken locators.
+
+The Self-Healing Locator Engine now includes an explainable decision layer that evaluates fallback candidates using:
+
+- Confidence scoring
+- Risk classification
+- Visible text evidence
+- Arabic text evidence
+- Accessibility role hints
+- Semantic expectations
+- Configurable healing modes
+
+```java
+QatraLocator saveButton = QatraLocator.primary(By.id("old-save-btn"))
+        .named("Save request button")
+        .expectedRole("button")
+        .expectedArabicText("حفظ الطلب")
+        .expectedAction("save")
+        .fallbackDataTestId("save-request")
+        .fallbackText("حفظ الطلب")
+        .build();
+
+driver().element().smartClick(saveButton);
+```
+
+Supported healing modes include:
+
+```text
+OFF
+REPORT_ONLY
+SUGGEST_ONLY
+SAFE_AUTO_HEAL
+AUTO_HEAL
+STRICT_APPROVAL
+```
+
+This keeps QATRA safer for real-world enterprise testing because it can explain why a healed locator was accepted or rejected.
+
+
+---
+
+## Healing Reports & Patch Suggestions
+
+QATRA turns self-healing locator decisions into reviewable QA evidence.
+
+When a fallback locator is safely used, QATRA can export:
+
+```text
+target/qatra-reports/healing/healing-report-latest.html
+target/qatra-reports/healing/healing-report-latest.json
+target/qatra-reports/healing/healing-report-latest.txt
+target/qatra-reports/healing/locator-patches.json
+target/qatra-reports/healing/history/index.html
+```
+
+The report includes:
+
+- primary locator
+- resolved locator
+- confidence score
+- risk level
+- decision summary
+- candidate attempts
+- rejected candidates
+- suggested permanent locator replacement
+
+Example patch suggestion:
+
+```json
+{
+  "locatorName": "Save request button",
+  "oldLocator": "By.id: old-save-button",
+  "newLocator": "By.cssSelector: [data-testid='save-request']",
+  "confidence": "92%",
+  "risk": "LOW",
+  "suggestedJavaCode": "By.cssSelector(\"[data-testid='save-request']\")"
+}
+```
+
+QATRA does not rewrite source code automatically. It provides human-reviewable suggestions so teams can improve Page Object locators safely.
+
+
+---
+
+## Proactive Locator Quality Advisor
+
+QATRA includes a proactive Locator Quality Advisor designed to detect fragile Selenium locators before they break during regression.
+
+Instead of waiting for a locator to fail and then applying self-healing, QATRA can analyze locator quality early and provide a risk score, reasons, and recommendations.
+
+```java
+LocatorAdvisorReport report = ProactiveLocatorQualityAdvisor.analyze(
+        "Save request button",
+        By.xpath("/html/body/div[3]/div[2]/button[1]")
+);
+
+System.out.println(report.score());
+System.out.println(report.riskLevel());
+System.out.println(report.recommendations());
+```
+
+QATRA detects common locator risks such as:
+
+- absolute XPath
+- index-based selectors
+- generated framework classes
+- dynamic IDs
+- text-only primary locators
+- missing `data-testid` or semantic attributes
+- weak fallback locator chains
+
+QATRA can also export locator quality reports to:
+
+```text
+target/qatra-reports/locators
+```
+
+This turns locator strategy into a measurable quality practice, not just a coding preference.
+
+
+---
+
+## Healing Modes & Bug-Safety Guardrails
+
+QATRA self-healing is designed to be controlled and reviewable, not blind.
+
+Supported healing modes:
+
+- `OFF` — disable fallback healing
+- `REPORT_ONLY` — analyze and report, but do not use fallbacks
+- `SUGGEST_ONLY` — suggest fallback locators for human review
+- `SAFE_AUTO_HEAL` — auto-heal only when confidence is high and risk is low
+- `AUTO_HEAL` — auto-heal using configured thresholds
+- `STRICT_APPROVAL` — auto-heal only when the candidate exists in an approval file
+
+```java
+QatraHealingOptions options = QatraHealingOptions.builder()
+        .mode(HealingMode.SAFE_AUTO_HEAL)
+        .safeAutoHealMinimumConfidence(90)
+        .maximumAutoHealRisk(HealingRiskLevel.LOW)
+        .failOnAmbiguousCandidates(true)
+        .blockDisabledCandidates(true)
+        .build();
+```
+
+QATRA blocks healing when a fallback candidate may hide a real product bug, such as hidden elements, disabled buttons, ambiguous matches, or missing semantic signals.
+
+
+---
+
+## Advanced Healing Reports
+
+QATRA does not treat self-healing as a silent runtime workaround. When a locator is healed, QATRA exports a human-reviewable evidence package under `target/qatra-reports/healing`.
+
+The report includes:
+
+- Healing dashboard
+- HTML / JSON / TXT healing report
+- Candidate comparison CSV
+- Decision matrix JSON
+- Human review checklist
+- Locator patch suggestions in JSON and Markdown
+- Healing history index
+
+This helps teams understand why a locator was healed, what candidates were rejected, how confident the decision was, what risk level was assigned, and what permanent code change should be reviewed.
+
+```text
+target/qatra-reports/healing/healing-dashboard-latest.html
+target/qatra-reports/healing/human-review-checklist-latest.md
+target/qatra-reports/healing/locator-patches.json
+target/qatra-reports/healing/locator-patches.md
+```
+
+QATRA intentionally does not update source code automatically. It generates patch suggestions for human review, so self-healing does not hide real bugs.
+
+---
+
+## Arabic Component Self-Healing
+
+QATRA can resolve common Arabic/RTL web components by business intent instead of relying only on fragile selectors.
+
+Examples:
+
+```java
+driver()
+        .componentHealing()
+        .dropdown("المدينة")
+        .selectArabicText("الرياض");
+
+driver()
+        .componentHealing()
+        .tableContaining("منشأة تجريبية")
+        .assertRowContainsArabicText("منشأة تجريبية");
+
+driver()
+        .componentHealing()
+        .modalButton("تأكيد الحفظ", "تأكيد")
+        .click();
+```
+
+Supported component intents include Arabic dropdowns, tables, modals, toast/status messages, date pickers, and label-based input fields.
+
+This feature builds on QATRA's self-healing pipeline, so component healing decisions can still use confidence scoring, risk levels, healing modes, guardrails, reports, and patch suggestions.
+
+
 ## Roadmap
 
 Near-term focus:
 
 ```text
 Phase 3.15  Web assertion diagnostics foundation
-Phase 3.16  Integrate Adaptive Wait Engine into ElementActions
+Phase 3.16  Adaptive Element Actions integration
 Phase 3.17  Stronger assertion failure reports
 Phase 3.18  Advanced web components
 Phase 3.19  Examples and README cleanup
@@ -918,3 +1238,106 @@ java selenium testng test-automation qa-automation web-testing rtl arabic-testin
 ## License
 
 MIT © QATRA Community
+
+---
+
+## Arabic Semantic Locator Healing
+
+QATRA can use Arabic business intent as part of its self-healing locator strategy.
+
+Instead of relying only on raw CSS or XPath fallbacks, QATRA can understand common Arabic actions such as:
+
+- `save` → حفظ، حفظ الطلب، حفظ البيانات
+- `submit` → إرسال، إرسال الطلب، تقديم الطلب
+- `approve` → اعتماد، موافقة، قبول
+- `reject` → رفض، إرجاع، عدم الموافقة
+- `cancel` → إلغاء، تراجع، إغلاق
+- `search` → بحث، استعلام
+
+```java
+QatraLocator saveButton = QatraLocator.primary(By.id("old-save-btn"))
+        .named("Save request button")
+        .expectedRole("button")
+        .semanticArabicAction("save")
+        .fallbackDataTestId("submit-request")
+        .fallbackArabicAction("save")
+        .build();
+
+driver()
+        .element()
+        .smartClick(saveButton);
+```
+
+QATRA also supports Arabic label-based healing for fields:
+
+```java
+QatraLocator facilityName = QatraLocator.primary(By.id("facility-name"))
+        .named("Facility name field")
+        .expectedRole("textbox")
+        .expectedArabicText("اسم المنشأة")
+        .fallbackArabicLabel("اسم المنشأة")
+        .build();
+```
+
+This keeps locator healing explainable, Arabic-aware, and safer than blind fallback clicking.
+
+---
+
+## IDE-Free Locator Patch Strategy
+
+QATRA does not blindly modify source code after self-healing.
+
+Instead, when a locator is healed safely, QATRA can generate reviewable patch workflow artifacts:
+
+```text
+target/qatra-reports/healing/patch-workflow/
+  qatra-healing-suggestions.json
+  qatra-healing-suggestions.md
+  qatra-healing-locator-patches.diff
+  qatra-healing-approval-template.json
+  qatra-healing-review.html
+```
+
+This provides a safer workflow:
+
+1. QATRA heals the locator at runtime.
+2. QATRA explains confidence, risk, and the selected fallback.
+3. QATRA suggests a permanent locator update.
+4. The automation engineer reviews the suggestion.
+5. Page Object code is updated manually only after approval.
+
+This keeps QATRA safe for real projects because healing remains evidence-based and human-reviewed.
+
+---
+
+## Accessibility Tree Locator Healing
+
+QATRA can now use accessibility identity as part of self-healing locator recovery.
+
+Instead of relying only on fragile CSS or XPath selectors, QATRA can use stable semantic signals such as:
+
+- `role`
+- `aria-label`
+- `aria-labelledby`
+- associated labels
+- placeholders
+- titles
+- inferred native element roles
+- Arabic accessible names
+
+```java
+QatraLocator saveButton = QatraLocator.primary(By.id("old-save-button"))
+        .named("Save request button")
+        .expectedRole("button")
+        .expectedAccessibleName("حفظ الطلب")
+        .semanticArabicAction("save")
+        .fallbackRoleAndAccessibleName("button", "حفظ الطلب")
+        .build();
+
+driver()
+        .element()
+        .smartClick(saveButton);
+```
+
+This helps QATRA recover elements using business-readable UI intent, while still applying confidence scoring, risk checks, healing modes, and diagnostic reports.
+
