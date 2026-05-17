@@ -19,6 +19,11 @@ Phase 3.8  CI/CD and release readiness
 Phase 3.9  Documentation polish and public README
 Phase 3.10 Web hardening, RTL regex fix, and parallel-safe RTL config
 Phase 3.11  Smart Wait Engine v2 and fluent API consistency
+Phase 3.12  QATRA Adaptive Wait Engine
+Phase 3.13  Web Component Layer
+Phase 3.14  Web Assertion Engine Cleanup
+Phase 3.15  Web Assertion Failure Diagnostics
+Phase 3.16  Adaptive element actions integration
 ```
 
 ## Next Recommended Phases
@@ -104,4 +109,27 @@ Scope:
 - Component-specific readiness checks.
 - Timeout evidence reports.
 
-Status: initial implementation and design added. Full production hardening requires additional unit and browser integration tests.
+Status: implemented and followed by Phase 3.16 adaptive element action integration. Full production hardening still requires more real-world web examples.
+
+## Self-Healing Locators
+
+- [Self-Healing Locator Engine](self-healing-locator-engine.md)
+
+
+### Phase 3.18.4 — Proactive Locator Quality Advisor
+
+Detect fragile locators before failure using score, risk, recommendations, HTML/JSON/TXT reports, and optional quality gates.
+
+## Phase 3.18.7 — IDE-Free Code Patch Strategy
+
+Add a safe, human-reviewed workflow for converting healed locators into maintainable Page Object updates through generated patch artifacts.
+
+
+## Phase 3.18.8 — Accessibility Tree Locator Healing
+
+Accessibility-aware self-healing locator strategy for Arabic and enterprise web applications.
+
+
+## Phase 3.18.9 — Arabic Component Self-Healing
+
+Added business-intent based healing for Arabic dropdowns, tables, modals, toast messages, date pickers, and label-based form fields. This extends QATRA self-healing from element-level fallback into component-aware recovery for Arabic/RTL enterprise systems.

@@ -49,3 +49,33 @@ Welcome to the QATRA Engine documentation.
 - [Adaptive Wait Roadmap](qatra-adaptive-wait-roadmap.md)
 - [Adaptive Wait GitHub Issues](github-issues-adaptive-wait.md)
 - [README Adaptive Wait Draft](README-improvement-adaptive-waits.md)
+
+- [Adaptive Element Actions](adaptive-element-actions.md)
+
+## Self-Healing Locators
+
+- [Self-Healing Locator Engine](self-healing-locator-engine.md)
+
+## Healing Reports
+
+- [Healing Confidence, Risk & Approval](healing-confidence-risk-approval.md)
+- [Healing Reports & Patch Suggestions](healing-reports-patch-suggestions.md)
+
+- [Arabic Semantic Locator Healing](arabic-semantic-locator-healing.md)
+
+
+- [Locator Quality Advisor](locator-quality-advisor.md) — proactive locator scoring, risk analysis, and quality gate support.
+
+- [Healing Modes & Bug-Safety Guardrails](healing-modes-guardrails.md)
+- [Advanced Healing Reports](advanced-healing-reports.md)
+- [Advanced Healing Report Issues](github-issues-advanced-healing-reports.md)
+
+- [IDE-Free Code Patch Strategy](ide-code-patch-strategy.md)
+- [GitHub Issues — Code Patch Strategy](github-issues-code-patch-strategy.md)
+
+- [Accessibility Tree Locator Healing](accessibility-tree-locator-healing.md)
+
+
+## Phase 3.18.9 — Arabic Component Self-Healing
+
+Added business-intent based healing for Arabic dropdowns, tables, modals, toast messages, date pickers, and label-based form fields. This extends QATRA self-healing from element-level fallback into component-aware recovery for Arabic/RTL enterprise systems.
